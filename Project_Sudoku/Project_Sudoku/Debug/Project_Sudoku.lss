@@ -1,0 +1,1417 @@
+
+Project_Sudoku.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000840  00000000  00000000  00000054  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  00800060  00000894  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .comment      00000030  00000000  00000000  00000894  2**0
+                  CONTENTS, READONLY
+  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  000008c4  2**2
+                  CONTENTS, READONLY
+  4 .debug_aranges 00000050  00000000  00000000  00000900  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_info   00000cb8  00000000  00000000  00000950  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_abbrev 00000696  00000000  00000000  00001608  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_line   000007f9  00000000  00000000  00001c9e  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_frame  00000118  00000000  00000000  00002498  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_str    0000035d  00000000  00000000  000025b0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_loc    000003dc  00000000  00000000  0000290d  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_ranges 000000a8  00000000  00000000  00002ce9  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0c 94 2a 00 	jmp	0x54	; 0x54 <__ctors_end>
+   4:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+   8:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+   c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  10:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  14:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  18:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  1c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  20:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  24:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  28:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  2c:	0c 94 7a 01 	jmp	0x2f4	; 0x2f4 <__vector_11>
+  30:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  34:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  38:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  3c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  40:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  44:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  48:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  4c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  50:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+
+00000054 <__ctors_end>:
+  54:	11 24       	eor	r1, r1
+  56:	1f be       	out	0x3f, r1	; 63
+  58:	cf e5       	ldi	r28, 0x5F	; 95
+  5a:	d4 e0       	ldi	r29, 0x04	; 4
+  5c:	de bf       	out	0x3e, r29	; 62
+  5e:	cd bf       	out	0x3d, r28	; 61
+  60:	0e 94 64 00 	call	0xc8	; 0xc8 <main>
+  64:	0c 94 1e 04 	jmp	0x83c	; 0x83c <_exit>
+
+00000068 <__bad_interrupt>:
+  68:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
+
+0000006c <init>:
+#include <avr/interrupt.h>
+
+unsigned char sudoku[9][9]__attribute__((address(0x80070)));//2D global array 9x9 for creating the board for sudoku 
+
+void init(){
+	UCSRB = (1 << RXCIE )| (1 << RXEN ) | (1 << TXEN ); // Turn on the transmission and reception circuitry
+  6c:	88 e9       	ldi	r24, 0x98	; 152
+  6e:	8a b9       	out	0x0a, r24	; 10
+	UCSRC = (1 << URSEL ) | (1 << UCSZ0 ) | (1 << UCSZ1 ); // Use 8- bit character sizes
+  70:	86 e8       	ldi	r24, 0x86	; 134
+  72:	80 bd       	out	0x20, r24	; 32
+	UBRRH = ((BAUD_PRESCALE)>>8); // Load upper 8- bits of the baud rate value into the high byte
+  74:	10 bc       	out	0x20, r1	; 32
+	UBRRL = BAUD_PRESCALE; // Load lower 8 - bits of the baud rate value into the low byte of the
+  76:	80 e4       	ldi	r24, 0x40	; 64
+  78:	89 b9       	out	0x09, r24	; 9
+	DDRC=0xFF;//set portc as an output
+  7a:	8f ef       	ldi	r24, 0xFF	; 255
+  7c:	84 bb       	out	0x14, r24	; 20
+	sei(); // Enable the Global Interrupt Enable flag so that interrupts can be processed
+  7e:	78 94       	sei
+	//initialize sudoku array cells to 0
+	for(unsigned char i=0;i<9;i++){
+  80:	30 e0       	ldi	r19, 0x00	; 0
+  82:	16 c0       	rjmp	.+44     	; 0xb0 <init+0x44>
+	   for (unsigned char j=0;j<9;j++){
+		  sudoku[i][j]=0;
+  84:	83 2f       	mov	r24, r19
+  86:	90 e0       	ldi	r25, 0x00	; 0
+  88:	fc 01       	movw	r30, r24
+  8a:	ee 0f       	add	r30, r30
+  8c:	ff 1f       	adc	r31, r31
+  8e:	ee 0f       	add	r30, r30
+  90:	ff 1f       	adc	r31, r31
+  92:	ee 0f       	add	r30, r30
+  94:	ff 1f       	adc	r31, r31
+  96:	e8 0f       	add	r30, r24
+  98:	f9 1f       	adc	r31, r25
+  9a:	e0 59       	subi	r30, 0x90	; 144
+  9c:	ff 4f       	sbci	r31, 0xFF	; 255
+  9e:	e2 0f       	add	r30, r18
+  a0:	f1 1d       	adc	r31, r1
+  a2:	10 82       	st	Z, r1
+	UBRRL = BAUD_PRESCALE; // Load lower 8 - bits of the baud rate value into the low byte of the
+	DDRC=0xFF;//set portc as an output
+	sei(); // Enable the Global Interrupt Enable flag so that interrupts can be processed
+	//initialize sudoku array cells to 0
+	for(unsigned char i=0;i<9;i++){
+	   for (unsigned char j=0;j<9;j++){
+  a4:	2f 5f       	subi	r18, 0xFF	; 255
+  a6:	01 c0       	rjmp	.+2      	; 0xaa <init+0x3e>
+  a8:	20 e0       	ldi	r18, 0x00	; 0
+  aa:	29 30       	cpi	r18, 0x09	; 9
+  ac:	58 f3       	brcs	.-42     	; 0x84 <init+0x18>
+	UBRRH = ((BAUD_PRESCALE)>>8); // Load upper 8- bits of the baud rate value into the high byte
+	UBRRL = BAUD_PRESCALE; // Load lower 8 - bits of the baud rate value into the low byte of the
+	DDRC=0xFF;//set portc as an output
+	sei(); // Enable the Global Interrupt Enable flag so that interrupts can be processed
+	//initialize sudoku array cells to 0
+	for(unsigned char i=0;i<9;i++){
+  ae:	3f 5f       	subi	r19, 0xFF	; 255
+  b0:	39 30       	cpi	r19, 0x09	; 9
+  b2:	d0 f3       	brcs	.-12     	; 0xa8 <init+0x3c>
+	   for (unsigned char j=0;j<9;j++){
+		  sudoku[i][j]=0;
+	    }
+	 }
+	 unsigned char* led=(unsigned char*)0x69;
+	 *led=0;
+  b4:	10 92 69 00 	sts	0x0069, r1	; 0x800069 <__DATA_REGION_ORIGIN__+0x9>
+	 unsigned char* xpos=(unsigned char*)0x60;
+	 unsigned char* ypos=(unsigned char*)0x61;
+	 *xpos=1;
+  b8:	81 e0       	ldi	r24, 0x01	; 1
+  ba:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <__DATA_REGION_ORIGIN__>
+	 *ypos=1;
+  be:	80 93 61 00 	sts	0x0061, r24	; 0x800061 <__DATA_REGION_ORIGIN__+0x1>
+	
+	PORTC=0xFF;//initialize portc showing all leds off 
+  c2:	8f ef       	ldi	r24, 0xFF	; 255
+  c4:	85 bb       	out	0x15, r24	; 21
+  c6:	08 95       	ret
+
+000000c8 <main>:
+
+}
+
+int main (void)
+{
+	init();
+  c8:	0e 94 36 00 	call	0x6c	; 0x6c <init>
+  cc:	ff cf       	rjmp	.-2      	; 0xcc <main+0x4>
+
+000000ce <Receive>:
+		// Do nothing - echoing is handled by the ISR instead of in the main loop
+	}
+}
+//receive function.Waits for the receive buffer to empty and return UDR containing the received information from the PC
+unsigned char Receive(){
+	while ( !(UCSRA & (1<<RXC)) ){};//check if the receive buffer is empty and loop until it is (receive complete)
+  ce:	5f 9b       	sbis	0x0b, 7	; 11
+  d0:	fe cf       	rjmp	.-4      	; 0xce <Receive>
+		
+	return UDR;
+  d2:	8c b1       	in	r24, 0x0c	; 12
+		
+	
+}
+  d4:	08 95       	ret
+
+000000d6 <Transmit>:
+//transmit function.Used by the avr to transmit information to the PC from UDR after transmit buffer is emptied
+void Transmit(unsigned char* answer){
+	// Wait for empty transmit buffer
+	while ( !( UCSRA & (1<<UDRE)) ){};
+  d6:	5d 9b       	sbis	0x0b, 5	; 11
+  d8:	fe cf       	rjmp	.-4      	; 0xd6 <Transmit>
+	UDR= *answer; 
+  da:	fc 01       	movw	r30, r24
+  dc:	80 81       	ld	r24, Z
+  de:	8c b9       	out	0x0c, r24	; 12
+  e0:	08 95       	ret
+
+000000e2 <leds>:
+}
+//function for turning on leds while the sudoku is being solved (called in P command in the RXC interrupt handler) 
+//counting the full cells and turning on the equivalent led every time.
+void leds(unsigned char* led){
+	
+	if(*led>=50){
+  e2:	fc 01       	movw	r30, r24
+  e4:	80 81       	ld	r24, Z
+  e6:	82 33       	cpi	r24, 0x32	; 50
+  e8:	88 f0       	brcs	.+34     	; 0x10c <leds+0x2a>
+		if(*led>=70){
+  ea:	86 34       	cpi	r24, 0x46	; 70
+  ec:	38 f0       	brcs	.+14     	; 0xfc <leds+0x1a>
+			if(*led>=80){
+  ee:	80 35       	cpi	r24, 0x50	; 80
+  f0:	10 f0       	brcs	.+4      	; 0xf6 <leds+0x14>
+				PORTC=0b00000000;//if the full cells are more than 80 then turn all leds on
+  f2:	15 ba       	out	0x15, r1	; 21
+				return;
+  f4:	08 95       	ret
+			}else{
+				PORTC=0b10000000;//if the full cells are more than 70 then turn LED0-LED6 on
+  f6:	80 e8       	ldi	r24, 0x80	; 128
+  f8:	85 bb       	out	0x15, r24	; 21
+				return;
+  fa:	08 95       	ret
+			}
+		}else{
+			if(*led>=60){
+  fc:	8c 33       	cpi	r24, 0x3C	; 60
+  fe:	18 f0       	brcs	.+6      	; 0x106 <leds+0x24>
+				PORTC=0b11000000;//if the full cells are more than 60 then turn LED0-LED5 on
+ 100:	80 ec       	ldi	r24, 0xC0	; 192
+ 102:	85 bb       	out	0x15, r24	; 21
+				return;
+ 104:	08 95       	ret
+			}else{
+				PORTC=0b11100000;//if the full cells are more than 50 then turn LED5-LED4 on
+ 106:	80 ee       	ldi	r24, 0xE0	; 224
+ 108:	85 bb       	out	0x15, r24	; 21
+				return;
+ 10a:	08 95       	ret
+			}
+		}
+	}else{
+		if(*led>=30){
+ 10c:	8e 31       	cpi	r24, 0x1E	; 30
+ 10e:	40 f0       	brcs	.+16     	; 0x120 <leds+0x3e>
+			if(*led>=40){
+ 110:	88 32       	cpi	r24, 0x28	; 40
+ 112:	18 f0       	brcs	.+6      	; 0x11a <leds+0x38>
+				PORTC=0b11110000;//if the full cells are more than 40 then turn LED0-LED3 on
+ 114:	80 ef       	ldi	r24, 0xF0	; 240
+ 116:	85 bb       	out	0x15, r24	; 21
+				return;
+ 118:	08 95       	ret
+			}else{
+				PORTC=0b11111000;//if the full cells are more than 30 then turn LED0-LED2 on
+ 11a:	88 ef       	ldi	r24, 0xF8	; 248
+ 11c:	85 bb       	out	0x15, r24	; 21
+				return;
+ 11e:	08 95       	ret
+			}
+		}else{
+			if(*led>=20){
+ 120:	84 31       	cpi	r24, 0x14	; 20
+ 122:	18 f0       	brcs	.+6      	; 0x12a <leds+0x48>
+				PORTC=0b11111100;//if the full cells are more than 20 then turn LED0-LED1 on
+ 124:	8c ef       	ldi	r24, 0xFC	; 252
+ 126:	85 bb       	out	0x15, r24	; 21
+				return;
+ 128:	08 95       	ret
+			}else{
+				PORTC=0b11111110;//if the full cells are more than 10 then turn LED0 on
+ 12a:	8e ef       	ldi	r24, 0xFE	; 254
+ 12c:	85 bb       	out	0x15, r24	; 21
+ 12e:	08 95       	ret
+
+00000130 <solveSudoku>:
+/*function for the sudoku solving algorithm called by P command in RXC interrupt handler.
+  finds the empty cells in global sudoku unsolved array and calculates the correct value for each
+  cell using backtracking algorithm.The function leds() is called as the algorithm runs
+  to turn on the equivalent leds as the sudoku cells are being filled.If the cells are all full then the function returns 1 as a success.
+*/
+unsigned char solveSudoku (){
+ 130:	af 92       	push	r10
+ 132:	bf 92       	push	r11
+ 134:	cf 92       	push	r12
+ 136:	df 92       	push	r13
+ 138:	ff 92       	push	r15
+ 13a:	0f 93       	push	r16
+ 13c:	1f 93       	push	r17
+ 13e:	cf 93       	push	r28
+ 140:	df 93       	push	r29
+	unsigned char* led=(unsigned char*)0x69;//pointer for led counter
+	unsigned char* result=(unsigned char*)0x6A;
+	*result=FALSE;//variable for checking if a number is suitable for each cell of the sudoku array 
+ 142:	10 92 6a 00 	sts	0x006A, r1	; 0x80006a <__DATA_REGION_ORIGIN__+0xa>
+	unsigned char x,y,i,j;
+	//go through the whole 9x9 array
+	for( i=0;i<9;i++){
+ 146:	30 e0       	ldi	r19, 0x00	; 0
+ 148:	1c c0       	rjmp	.+56     	; 0x182 <solveSudoku+0x52>
+		for ( j=0;j<9;j++){
+			if (sudoku[i][j]==0){//if an empty cell is detected then save i and j in variables x and y for later use
+ 14a:	83 2f       	mov	r24, r19
+ 14c:	90 e0       	ldi	r25, 0x00	; 0
+ 14e:	fc 01       	movw	r30, r24
+ 150:	ee 0f       	add	r30, r30
+ 152:	ff 1f       	adc	r31, r31
+ 154:	ee 0f       	add	r30, r30
+ 156:	ff 1f       	adc	r31, r31
+ 158:	ee 0f       	add	r30, r30
+ 15a:	ff 1f       	adc	r31, r31
+ 15c:	e8 0f       	add	r30, r24
+ 15e:	f9 1f       	adc	r31, r25
+ 160:	e0 59       	subi	r30, 0x90	; 144
+ 162:	ff 4f       	sbci	r31, 0xFF	; 255
+ 164:	e2 0f       	add	r30, r18
+ 166:	f1 1d       	adc	r31, r1
+ 168:	80 81       	ld	r24, Z
+ 16a:	88 23       	and	r24, r24
+ 16c:	31 f0       	breq	.+12     	; 0x17a <solveSudoku+0x4a>
+	unsigned char* result=(unsigned char*)0x6A;
+	*result=FALSE;//variable for checking if a number is suitable for each cell of the sudoku array 
+	unsigned char x,y,i,j;
+	//go through the whole 9x9 array
+	for( i=0;i<9;i++){
+		for ( j=0;j<9;j++){
+ 16e:	2f 5f       	subi	r18, 0xFF	; 255
+ 170:	01 c0       	rjmp	.+2      	; 0x174 <solveSudoku+0x44>
+ 172:	20 e0       	ldi	r18, 0x00	; 0
+ 174:	29 30       	cpi	r18, 0x09	; 9
+ 176:	48 f3       	brcs	.-46     	; 0x14a <solveSudoku+0x1a>
+ 178:	03 c0       	rjmp	.+6      	; 0x180 <solveSudoku+0x50>
+			if (sudoku[i][j]==0){//if an empty cell is detected then save i and j in variables x and y for later use
+				x=i;
+				y=j;
+ 17a:	c2 2f       	mov	r28, r18
+	unsigned char x,y,i,j;
+	//go through the whole 9x9 array
+	for( i=0;i<9;i++){
+		for ( j=0;j<9;j++){
+			if (sudoku[i][j]==0){//if an empty cell is detected then save i and j in variables x and y for later use
+				x=i;
+ 17c:	d3 2f       	mov	r29, r19
+				y=j;
+				i=9;//turn i value to 9 to break the outer loop
+ 17e:	39 e0       	ldi	r19, 0x09	; 9
+	unsigned char* led=(unsigned char*)0x69;//pointer for led counter
+	unsigned char* result=(unsigned char*)0x6A;
+	*result=FALSE;//variable for checking if a number is suitable for each cell of the sudoku array 
+	unsigned char x,y,i,j;
+	//go through the whole 9x9 array
+	for( i=0;i<9;i++){
+ 180:	3f 5f       	subi	r19, 0xFF	; 255
+ 182:	39 30       	cpi	r19, 0x09	; 9
+ 184:	b0 f3       	brcs	.-20     	; 0x172 <solveSudoku+0x42>
+			 
+		}
+		
+	 }
+	  
+	if(i!=10 ){//this is the case where all the sudoku cells are full, so the program has not entered the if case above to turn the i variable to 9.(the statement compares i to 10 as the i++ happens in the end of the for loop
+ 186:	3a 30       	cpi	r19, 0x0A	; 10
+ 188:	09 f0       	breq	.+2      	; 0x18c <solveSudoku+0x5c>
+ 18a:	a7 c0       	rjmp	.+334    	; 0x2da <__EEPROM_REGION_LENGTH__+0xda>
+		return TRUE;// if this is the case then the sudoku is solved and the function returns
+    }		
+	
+			
+	//calculate the beginning of 3*3 sub array for x and y position of sudoku array saved from the for loops above
+	unsigned char subX=(x/3) * 3;//floor of x/3 multiplied by 3
+ 18c:	8b ea       	ldi	r24, 0xAB	; 171
+ 18e:	d8 9f       	mul	r29, r24
+ 190:	f1 2c       	mov	r15, r1
+ 192:	11 24       	eor	r1, r1
+ 194:	9f 2d       	mov	r25, r15
+ 196:	96 95       	lsr	r25
+ 198:	f9 2e       	mov	r15, r25
+ 19a:	ff 0c       	add	r15, r15
+ 19c:	f9 0e       	add	r15, r25
+	unsigned char subY=(y/3) * 3;//floor of y/3 multiplied by 3
+ 19e:	c8 9f       	mul	r28, r24
+ 1a0:	81 2d       	mov	r24, r1
+ 1a2:	11 24       	eor	r1, r1
+ 1a4:	86 95       	lsr	r24
+ 1a6:	08 2f       	mov	r16, r24
+ 1a8:	00 0f       	add	r16, r16
+ 1aa:	08 0f       	add	r16, r24
+				
+	for (unsigned char num=1;num<10;++num){//a loop for checking if any of the numbers 1-9 can be saved as a solution in the sudoku cell. 
+ 1ac:	11 e0       	ldi	r17, 0x01	; 1
+ 1ae:	90 c0       	rjmp	.+288    	; 0x2d0 <__EEPROM_REGION_LENGTH__+0xd0>
+		for (unsigned char k=0;k<9;++k){
+			//check if the num equals any of the values existing in the specific row or column for the given x and y 
+			if (sudoku[k][y]==num || sudoku[x][k]==num || sudoku[subX + (k%3)][subY + (k/3)] ==num){//or in the sub array starting from x and y positions calculated above(subX,subY) 
+ 1b0:	43 2f       	mov	r20, r19
+ 1b2:	50 e0       	ldi	r21, 0x00	; 0
+ 1b4:	fa 01       	movw	r30, r20
+ 1b6:	ee 0f       	add	r30, r30
+ 1b8:	ff 1f       	adc	r31, r31
+ 1ba:	ee 0f       	add	r30, r30
+ 1bc:	ff 1f       	adc	r31, r31
+ 1be:	ee 0f       	add	r30, r30
+ 1c0:	ff 1f       	adc	r31, r31
+ 1c2:	e4 0f       	add	r30, r20
+ 1c4:	f5 1f       	adc	r31, r21
+ 1c6:	e0 59       	subi	r30, 0x90	; 144
+ 1c8:	ff 4f       	sbci	r31, 0xFF	; 255
+ 1ca:	ec 0f       	add	r30, r28
+ 1cc:	f1 1d       	adc	r31, r1
+ 1ce:	80 81       	ld	r24, Z
+ 1d0:	18 17       	cp	r17, r24
+ 1d2:	b1 f1       	breq	.+108    	; 0x240 <__EEPROM_REGION_LENGTH__+0x40>
+ 1d4:	8d 2f       	mov	r24, r29
+ 1d6:	90 e0       	ldi	r25, 0x00	; 0
+ 1d8:	bc 01       	movw	r22, r24
+ 1da:	66 0f       	add	r22, r22
+ 1dc:	77 1f       	adc	r23, r23
+ 1de:	66 0f       	add	r22, r22
+ 1e0:	77 1f       	adc	r23, r23
+ 1e2:	66 0f       	add	r22, r22
+ 1e4:	77 1f       	adc	r23, r23
+ 1e6:	86 0f       	add	r24, r22
+ 1e8:	97 1f       	adc	r25, r23
+ 1ea:	80 59       	subi	r24, 0x90	; 144
+ 1ec:	9f 4f       	sbci	r25, 0xFF	; 255
+ 1ee:	fc 01       	movw	r30, r24
+ 1f0:	e4 0f       	add	r30, r20
+ 1f2:	f5 1f       	adc	r31, r21
+ 1f4:	80 81       	ld	r24, Z
+ 1f6:	18 17       	cp	r17, r24
+ 1f8:	19 f1       	breq	.+70     	; 0x240 <__EEPROM_REGION_LENGTH__+0x40>
+ 1fa:	2b ea       	ldi	r18, 0xAB	; 171
+ 1fc:	32 9f       	mul	r19, r18
+ 1fe:	21 2d       	mov	r18, r1
+ 200:	11 24       	eor	r1, r1
+ 202:	26 95       	lsr	r18
+ 204:	82 2f       	mov	r24, r18
+ 206:	88 0f       	add	r24, r24
+ 208:	82 0f       	add	r24, r18
+ 20a:	43 2f       	mov	r20, r19
+ 20c:	48 1b       	sub	r20, r24
+ 20e:	8f 2d       	mov	r24, r15
+ 210:	90 e0       	ldi	r25, 0x00	; 0
+ 212:	84 0f       	add	r24, r20
+ 214:	91 1d       	adc	r25, r1
+ 216:	40 2f       	mov	r20, r16
+ 218:	50 e0       	ldi	r21, 0x00	; 0
+ 21a:	42 0f       	add	r20, r18
+ 21c:	51 1d       	adc	r21, r1
+ 21e:	bc 01       	movw	r22, r24
+ 220:	66 0f       	add	r22, r22
+ 222:	77 1f       	adc	r23, r23
+ 224:	66 0f       	add	r22, r22
+ 226:	77 1f       	adc	r23, r23
+ 228:	66 0f       	add	r22, r22
+ 22a:	77 1f       	adc	r23, r23
+ 22c:	86 0f       	add	r24, r22
+ 22e:	97 1f       	adc	r25, r23
+ 230:	80 59       	subi	r24, 0x90	; 144
+ 232:	9f 4f       	sbci	r25, 0xFF	; 255
+ 234:	fc 01       	movw	r30, r24
+ 236:	e4 0f       	add	r30, r20
+ 238:	f5 1f       	adc	r31, r21
+ 23a:	80 81       	ld	r24, Z
+ 23c:	18 13       	cpse	r17, r24
+ 23e:	04 c0       	rjmp	.+8      	; 0x248 <__EEPROM_REGION_LENGTH__+0x48>
+					*result=TRUE;//pointer variable for checking if the num exists in the row or in the column or in the 3*3 sub array
+ 240:	81 e0       	ldi	r24, 0x01	; 1
+ 242:	80 93 6a 00 	sts	0x006A, r24	; 0x80006a <__DATA_REGION_ORIGIN__+0xa>
+					break;//break for saving time as the current num is not a solution for the cell
+ 246:	06 c0       	rjmp	.+12     	; 0x254 <__EEPROM_REGION_LENGTH__+0x54>
+	//calculate the beginning of 3*3 sub array for x and y position of sudoku array saved from the for loops above
+	unsigned char subX=(x/3) * 3;//floor of x/3 multiplied by 3
+	unsigned char subY=(y/3) * 3;//floor of y/3 multiplied by 3
+				
+	for (unsigned char num=1;num<10;++num){//a loop for checking if any of the numbers 1-9 can be saved as a solution in the sudoku cell. 
+		for (unsigned char k=0;k<9;++k){
+ 248:	3f 5f       	subi	r19, 0xFF	; 255
+ 24a:	01 c0       	rjmp	.+2      	; 0x24e <__EEPROM_REGION_LENGTH__+0x4e>
+ 24c:	30 e0       	ldi	r19, 0x00	; 0
+ 24e:	39 30       	cpi	r19, 0x09	; 9
+ 250:	08 f4       	brcc	.+2      	; 0x254 <__EEPROM_REGION_LENGTH__+0x54>
+ 252:	ae cf       	rjmp	.-164    	; 0x1b0 <solveSudoku+0x80>
+			if (sudoku[k][y]==num || sudoku[x][k]==num || sudoku[subX + (k%3)][subY + (k/3)] ==num){//or in the sub array starting from x and y positions calculated above(subX,subY) 
+					*result=TRUE;//pointer variable for checking if the num exists in the row or in the column or in the 3*3 sub array
+					break;//break for saving time as the current num is not a solution for the cell
+			}
+		}			
+		if (*result==FALSE){//if the variable is false that means that the num does not exist in the row, column or 3*3 sub array
+ 254:	80 91 6a 00 	lds	r24, 0x006A	; 0x80006a <__DATA_REGION_ORIGIN__+0xa>
+ 258:	81 11       	cpse	r24, r1
+ 25a:	37 c0       	rjmp	.+110    	; 0x2ca <__EEPROM_REGION_LENGTH__+0xca>
+			sudoku[x][y]=num;//save the num in the cell of sudoku
+ 25c:	cd 2e       	mov	r12, r29
+ 25e:	d1 2c       	mov	r13, r1
+ 260:	ac 2e       	mov	r10, r28
+ 262:	b1 2c       	mov	r11, r1
+ 264:	f6 01       	movw	r30, r12
+ 266:	ee 0f       	add	r30, r30
+ 268:	ff 1f       	adc	r31, r31
+ 26a:	ee 0f       	add	r30, r30
+ 26c:	ff 1f       	adc	r31, r31
+ 26e:	ee 0f       	add	r30, r30
+ 270:	ff 1f       	adc	r31, r31
+ 272:	ec 0d       	add	r30, r12
+ 274:	fd 1d       	adc	r31, r13
+ 276:	e0 59       	subi	r30, 0x90	; 144
+ 278:	ff 4f       	sbci	r31, 0xFF	; 255
+ 27a:	ea 0d       	add	r30, r10
+ 27c:	fb 1d       	adc	r31, r11
+ 27e:	10 83       	st	Z, r17
+			*led=*led+1;//increment the led variable for the new entry in the sudoku array
+ 280:	e9 e6       	ldi	r30, 0x69	; 105
+ 282:	f0 e0       	ldi	r31, 0x00	; 0
+ 284:	80 81       	ld	r24, Z
+ 286:	8f 5f       	subi	r24, 0xFF	; 255
+ 288:	80 83       	st	Z, r24
+			leds(led);//and call led function to turn on the equivalent leds
+ 28a:	89 e6       	ldi	r24, 0x69	; 105
+ 28c:	90 e0       	ldi	r25, 0x00	; 0
+ 28e:	0e 94 71 00 	call	0xe2	; 0xe2 <leds>
+			if (solveSudoku()){//call solveSudoku function again to continue the algorithm for the next empty cell and check if the sudoku is complete
+ 292:	0e 94 98 00 	call	0x130	; 0x130 <solveSudoku>
+ 296:	81 11       	cpse	r24, r1
+ 298:	22 c0       	rjmp	.+68     	; 0x2de <__EEPROM_REGION_LENGTH__+0xde>
+				return TRUE;//return the function if sudoku is solved
+			}
+			sudoku[x][y]=0;//undo the last entry in the sudoku array if solveSudoku returns false
+ 29a:	c6 01       	movw	r24, r12
+ 29c:	88 0f       	add	r24, r24
+ 29e:	99 1f       	adc	r25, r25
+ 2a0:	88 0f       	add	r24, r24
+ 2a2:	99 1f       	adc	r25, r25
+ 2a4:	88 0f       	add	r24, r24
+ 2a6:	99 1f       	adc	r25, r25
+ 2a8:	8c 0d       	add	r24, r12
+ 2aa:	9d 1d       	adc	r25, r13
+ 2ac:	80 59       	subi	r24, 0x90	; 144
+ 2ae:	9f 4f       	sbci	r25, 0xFF	; 255
+ 2b0:	fc 01       	movw	r30, r24
+ 2b2:	ea 0d       	add	r30, r10
+ 2b4:	fb 1d       	adc	r31, r11
+ 2b6:	10 82       	st	Z, r1
+			*led=*led-1;//update the led variable
+ 2b8:	e9 e6       	ldi	r30, 0x69	; 105
+ 2ba:	f0 e0       	ldi	r31, 0x00	; 0
+ 2bc:	80 81       	ld	r24, Z
+ 2be:	81 50       	subi	r24, 0x01	; 1
+ 2c0:	80 83       	st	Z, r24
+			leds(led);//and call the leds function to turn on the equivalent leds
+ 2c2:	89 e6       	ldi	r24, 0x69	; 105
+ 2c4:	90 e0       	ldi	r25, 0x00	; 0
+ 2c6:	0e 94 71 00 	call	0xe2	; 0xe2 <leds>
+		}
+		*result=FALSE;//re initialize result variable to check the next num 
+ 2ca:	10 92 6a 00 	sts	0x006A, r1	; 0x80006a <__DATA_REGION_ORIGIN__+0xa>
+			
+	//calculate the beginning of 3*3 sub array for x and y position of sudoku array saved from the for loops above
+	unsigned char subX=(x/3) * 3;//floor of x/3 multiplied by 3
+	unsigned char subY=(y/3) * 3;//floor of y/3 multiplied by 3
+				
+	for (unsigned char num=1;num<10;++num){//a loop for checking if any of the numbers 1-9 can be saved as a solution in the sudoku cell. 
+ 2ce:	1f 5f       	subi	r17, 0xFF	; 255
+ 2d0:	1a 30       	cpi	r17, 0x0A	; 10
+ 2d2:	08 f4       	brcc	.+2      	; 0x2d6 <__EEPROM_REGION_LENGTH__+0xd6>
+ 2d4:	bb cf       	rjmp	.-138    	; 0x24c <__EEPROM_REGION_LENGTH__+0x4c>
+			*led=*led-1;//update the led variable
+			leds(led);//and call the leds function to turn on the equivalent leds
+		}
+		*result=FALSE;//re initialize result variable to check the next num 
+	}
+	return FALSE;//no num is a suitable solution for the current cell so return false to undo the last entry
+ 2d6:	80 e0       	ldi	r24, 0x00	; 0
+ 2d8:	03 c0       	rjmp	.+6      	; 0x2e0 <__EEPROM_REGION_LENGTH__+0xe0>
+		
+	 }
+	  
+	if(i!=10 ){//this is the case where all the sudoku cells are full, so the program has not entered the if case above to turn the i variable to 9.(the statement compares i to 10 as the i++ happens in the end of the for loop
+				//so when i is set to 9 inside the if statement above, it exits as 10 from the outer loop).
+		return TRUE;// if this is the case then the sudoku is solved and the function returns
+ 2da:	81 e0       	ldi	r24, 0x01	; 1
+ 2dc:	01 c0       	rjmp	.+2      	; 0x2e0 <__EEPROM_REGION_LENGTH__+0xe0>
+		if (*result==FALSE){//if the variable is false that means that the num does not exist in the row, column or 3*3 sub array
+			sudoku[x][y]=num;//save the num in the cell of sudoku
+			*led=*led+1;//increment the led variable for the new entry in the sudoku array
+			leds(led);//and call led function to turn on the equivalent leds
+			if (solveSudoku()){//call solveSudoku function again to continue the algorithm for the next empty cell and check if the sudoku is complete
+				return TRUE;//return the function if sudoku is solved
+ 2de:	81 e0       	ldi	r24, 0x01	; 1
+		}
+		*result=FALSE;//re initialize result variable to check the next num 
+	}
+	return FALSE;//no num is a suitable solution for the current cell so return false to undo the last entry
+	
+}
+ 2e0:	df 91       	pop	r29
+ 2e2:	cf 91       	pop	r28
+ 2e4:	1f 91       	pop	r17
+ 2e6:	0f 91       	pop	r16
+ 2e8:	ff 90       	pop	r15
+ 2ea:	df 90       	pop	r13
+ 2ec:	cf 90       	pop	r12
+ 2ee:	bf 90       	pop	r11
+ 2f0:	af 90       	pop	r10
+ 2f2:	08 95       	ret
+
+000002f4 <__vector_11>:
+
+
+ 
+//RXC interrupt handler function
+ISR ( USART_RXC_vect ){  
+ 2f4:	1f 92       	push	r1
+ 2f6:	0f 92       	push	r0
+ 2f8:	0f b6       	in	r0, 0x3f	; 63
+ 2fa:	0f 92       	push	r0
+ 2fc:	11 24       	eor	r1, r1
+ 2fe:	ef 92       	push	r14
+ 300:	ff 92       	push	r15
+ 302:	0f 93       	push	r16
+ 304:	1f 93       	push	r17
+ 306:	2f 93       	push	r18
+ 308:	3f 93       	push	r19
+ 30a:	4f 93       	push	r20
+ 30c:	5f 93       	push	r21
+ 30e:	6f 93       	push	r22
+ 310:	7f 93       	push	r23
+ 312:	8f 93       	push	r24
+ 314:	9f 93       	push	r25
+ 316:	af 93       	push	r26
+ 318:	bf 93       	push	r27
+ 31a:	cf 93       	push	r28
+ 31c:	df 93       	push	r29
+ 31e:	ef 93       	push	r30
+ 320:	ff 93       	push	r31
+	unsigned char* xpos=(unsigned char*)0x60;//pointer for modifying values to be used as index x in sudoku array (for transmitting results in T and S commands)
+	unsigned char* ypos=(unsigned char*)0x61;//pointer for modifying values to be used as index y in sudoku array (for transmitting results in T and S commands)
+	unsigned char* answer=(unsigned char* )0x62;//pointer for storing the answers from AVR to PC (and passed as a parameter in Transmit function)
+	*answer=0; //also used as index to p pointer for storing contents of UDR in SRAM 
+ 322:	10 92 62 00 	sts	0x0062, r1	; 0x800062 <__DATA_REGION_ORIGIN__+0x2>
+	unsigned char* data =(unsigned char* )0x63;//pointer used for storing more than 1 bytes (read from UDR)
+	unsigned char* led=(unsigned char*)0x69;
+	
+	while(1){   //infinite loop that breaks when LF is received from UDR
+		data[*answer]=Receive();//call receive function and store the returned value from UDR in sram addresses 0x63-0x68(depending on the command sent from the PC)
+ 326:	02 e6       	ldi	r16, 0x62	; 98
+ 328:	10 e0       	ldi	r17, 0x00	; 0
+ 32a:	f8 01       	movw	r30, r16
+ 32c:	c0 81       	ld	r28, Z
+ 32e:	d0 e0       	ldi	r29, 0x00	; 0
+ 330:	cd 59       	subi	r28, 0x9D	; 157
+ 332:	df 4f       	sbci	r29, 0xFF	; 255
+ 334:	0e 94 67 00 	call	0xce	; 0xce <Receive>
+ 338:	88 83       	st	Y, r24
+		if (data[*answer] == 0x0A) {//if the value is LF in ASCII then
+ 33a:	f8 01       	movw	r30, r16
+ 33c:	80 81       	ld	r24, Z
+ 33e:	e8 2f       	mov	r30, r24
+ 340:	f0 e0       	ldi	r31, 0x00	; 0
+ 342:	ed 59       	subi	r30, 0x9D	; 157
+ 344:	ff 4f       	sbci	r31, 0xFF	; 255
+ 346:	90 81       	ld	r25, Z
+ 348:	9a 30       	cpi	r25, 0x0A	; 10
+ 34a:	21 f0       	breq	.+8      	; 0x354 <__vector_11+0x60>
+			break;//and stop the loop
+		}else {//if the value in not LF
+			*answer=*answer+1;//increment the index of the array so that the next value can be read and stored
+ 34c:	8f 5f       	subi	r24, 0xFF	; 255
+ 34e:	80 93 62 00 	sts	0x0062, r24	; 0x800062 <__DATA_REGION_ORIGIN__+0x2>
+		  }
+					
+	}
+ 352:	e9 cf       	rjmp	.-46     	; 0x326 <__vector_11+0x32>
+			
+	//FROM THIS POINT ON IF THE DATA ARRAY COINTAINS SOME VALUES FOLLOWED BY CRLF THESE VALUES ARE
+	//COMPARED WITH THE ASCII VALUES OF THE REQUIRED COMMAND SET AND EXECUTE ACCORDINGLY.
+	
+	if ((data[0]==0x41) && (data[1]==0x54)) { //AT COMMAND (SIMPLY RESPONDS OK<CR><LF>)
+ 354:	80 91 63 00 	lds	r24, 0x0063	; 0x800063 <__DATA_REGION_ORIGIN__+0x3>
+ 358:	81 34       	cpi	r24, 0x41	; 65
+ 35a:	49 f5       	brne	.+82     	; 0x3ae <__vector_11+0xba>
+ 35c:	90 91 64 00 	lds	r25, 0x0064	; 0x800064 <__DATA_REGION_ORIGIN__+0x4>
+ 360:	94 35       	cpi	r25, 0x54	; 84
+ 362:	29 f5       	brne	.+74     	; 0x3ae <__vector_11+0xba>
+		 if (data[2]==0x0D && data[3]==0x0A){//check if <CR><LF> has been received.if not, no answer is transmitted.
+ 364:	80 91 65 00 	lds	r24, 0x0065	; 0x800065 <__DATA_REGION_ORIGIN__+0x5>
+ 368:	8d 30       	cpi	r24, 0x0D	; 13
+ 36a:	09 f0       	breq	.+2      	; 0x36e <__vector_11+0x7a>
+ 36c:	32 c2       	rjmp	.+1124   	; 0x7d2 <__stack+0x373>
+ 36e:	80 91 66 00 	lds	r24, 0x0066	; 0x800066 <__DATA_REGION_ORIGIN__+0x6>
+ 372:	8a 30       	cpi	r24, 0x0A	; 10
+ 374:	09 f0       	breq	.+2      	; 0x378 <__vector_11+0x84>
+ 376:	2d c2       	rjmp	.+1114   	; 0x7d2 <__stack+0x373>
+			*answer=0x4F;     //0 in ASCII
+ 378:	c2 e6       	ldi	r28, 0x62	; 98
+ 37a:	d0 e0       	ldi	r29, 0x00	; 0
+ 37c:	8f e4       	ldi	r24, 0x4F	; 79
+ 37e:	88 83       	st	Y, r24
+			Transmit(answer);
+ 380:	82 e6       	ldi	r24, 0x62	; 98
+ 382:	90 e0       	ldi	r25, 0x00	; 0
+ 384:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			*answer=0x4B;	 //K in ASCII
+ 388:	8b e4       	ldi	r24, 0x4B	; 75
+ 38a:	88 83       	st	Y, r24
+			Transmit(answer);
+ 38c:	82 e6       	ldi	r24, 0x62	; 98
+ 38e:	90 e0       	ldi	r25, 0x00	; 0
+ 390:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			*answer=0x0D;	 //CR in ASCII
+ 394:	8d e0       	ldi	r24, 0x0D	; 13
+ 396:	88 83       	st	Y, r24
+			Transmit(answer);
+ 398:	82 e6       	ldi	r24, 0x62	; 98
+ 39a:	90 e0       	ldi	r25, 0x00	; 0
+ 39c:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			*answer=0x0A;	 //LF in ASCII
+ 3a0:	8a e0       	ldi	r24, 0x0A	; 10
+ 3a2:	88 83       	st	Y, r24
+			Transmit(answer);
+ 3a4:	82 e6       	ldi	r24, 0x62	; 98
+ 3a6:	90 e0       	ldi	r25, 0x00	; 0
+ 3a8:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+ 3ac:	12 c2       	rjmp	.+1060   	; 0x7d2 <__stack+0x373>
+		 }
+		   
+	}else if(data[0]==0x43){			  //C COMMAND (reinitialize all sudoku array cells to 0 and turns all leds off.When done, transmits OK<CR><LF>)
+ 3ae:	83 34       	cpi	r24, 0x43	; 67
+ 3b0:	09 f0       	breq	.+2      	; 0x3b4 <__vector_11+0xc0>
+ 3b2:	4b c0       	rjmp	.+150    	; 0x44a <__DATA_REGION_LENGTH__+0x4a>
+	  if (data[1]==0x0D && data[2]==0x0A){//check if <CR><LF> has been received.if not, no answer is transmitted and no execution is done.
+ 3b4:	80 91 64 00 	lds	r24, 0x0064	; 0x800064 <__DATA_REGION_ORIGIN__+0x4>
+ 3b8:	8d 30       	cpi	r24, 0x0D	; 13
+ 3ba:	09 f0       	breq	.+2      	; 0x3be <__vector_11+0xca>
+ 3bc:	0a c2       	rjmp	.+1044   	; 0x7d2 <__stack+0x373>
+ 3be:	80 91 65 00 	lds	r24, 0x0065	; 0x800065 <__DATA_REGION_ORIGIN__+0x5>
+ 3c2:	8a 30       	cpi	r24, 0x0A	; 10
+ 3c4:	09 f0       	breq	.+2      	; 0x3c8 <__vector_11+0xd4>
+ 3c6:	05 c2       	rjmp	.+1034   	; 0x7d2 <__stack+0x373>
+		
+		*answer=0x4F;   //0 in ASCII
+ 3c8:	c2 e6       	ldi	r28, 0x62	; 98
+ 3ca:	d0 e0       	ldi	r29, 0x00	; 0
+ 3cc:	8f e4       	ldi	r24, 0x4F	; 79
+ 3ce:	88 83       	st	Y, r24
+		Transmit(answer);
+ 3d0:	82 e6       	ldi	r24, 0x62	; 98
+ 3d2:	90 e0       	ldi	r25, 0x00	; 0
+ 3d4:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+		*answer=0x4B;	 //K in ASCII
+ 3d8:	8b e4       	ldi	r24, 0x4B	; 75
+ 3da:	88 83       	st	Y, r24
+		Transmit(answer);
+ 3dc:	82 e6       	ldi	r24, 0x62	; 98
+ 3de:	90 e0       	ldi	r25, 0x00	; 0
+ 3e0:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+		*answer=0x0D;	 //CR in ASCII
+ 3e4:	8d e0       	ldi	r24, 0x0D	; 13
+ 3e6:	88 83       	st	Y, r24
+		Transmit(answer);
+ 3e8:	82 e6       	ldi	r24, 0x62	; 98
+ 3ea:	90 e0       	ldi	r25, 0x00	; 0
+ 3ec:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+		*answer=0x0A;	 //LF in ASCII
+ 3f0:	8a e0       	ldi	r24, 0x0A	; 10
+ 3f2:	88 83       	st	Y, r24
+		Transmit(answer);
+ 3f4:	82 e6       	ldi	r24, 0x62	; 98
+ 3f6:	90 e0       	ldi	r25, 0x00	; 0
+ 3f8:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+		
+		//go through the whole 9x9 array
+		for(int i=0;i<9;i++){
+ 3fc:	20 e0       	ldi	r18, 0x00	; 0
+ 3fe:	30 e0       	ldi	r19, 0x00	; 0
+ 400:	17 c0       	rjmp	.+46     	; 0x430 <__DATA_REGION_LENGTH__+0x30>
+	      for (int j=0;j<9;j++){
+		     sudoku[i][j]=0;//reinitialize sudoku array to 0
+ 402:	f9 01       	movw	r30, r18
+ 404:	ee 0f       	add	r30, r30
+ 406:	ff 1f       	adc	r31, r31
+ 408:	ee 0f       	add	r30, r30
+ 40a:	ff 1f       	adc	r31, r31
+ 40c:	ee 0f       	add	r30, r30
+ 40e:	ff 1f       	adc	r31, r31
+ 410:	e2 0f       	add	r30, r18
+ 412:	f3 1f       	adc	r31, r19
+ 414:	e0 59       	subi	r30, 0x90	; 144
+ 416:	ff 4f       	sbci	r31, 0xFF	; 255
+ 418:	e8 0f       	add	r30, r24
+ 41a:	f9 1f       	adc	r31, r25
+ 41c:	10 82       	st	Z, r1
+		*answer=0x0A;	 //LF in ASCII
+		Transmit(answer);
+		
+		//go through the whole 9x9 array
+		for(int i=0;i<9;i++){
+	      for (int j=0;j<9;j++){
+ 41e:	01 96       	adiw	r24, 0x01	; 1
+ 420:	02 c0       	rjmp	.+4      	; 0x426 <__DATA_REGION_LENGTH__+0x26>
+ 422:	80 e0       	ldi	r24, 0x00	; 0
+ 424:	90 e0       	ldi	r25, 0x00	; 0
+ 426:	89 30       	cpi	r24, 0x09	; 9
+ 428:	91 05       	cpc	r25, r1
+ 42a:	5c f3       	brlt	.-42     	; 0x402 <__DATA_REGION_LENGTH__+0x2>
+		Transmit(answer);
+		*answer=0x0A;	 //LF in ASCII
+		Transmit(answer);
+		
+		//go through the whole 9x9 array
+		for(int i=0;i<9;i++){
+ 42c:	2f 5f       	subi	r18, 0xFF	; 255
+ 42e:	3f 4f       	sbci	r19, 0xFF	; 255
+ 430:	29 30       	cpi	r18, 0x09	; 9
+ 432:	31 05       	cpc	r19, r1
+ 434:	b4 f3       	brlt	.-20     	; 0x422 <__DATA_REGION_LENGTH__+0x22>
+	      for (int j=0;j<9;j++){
+		     sudoku[i][j]=0;//reinitialize sudoku array to 0
+			 }	
+	     }
+		 *led=0; //reinitialize led counter
+ 436:	10 92 69 00 	sts	0x0069, r1	; 0x800069 <__DATA_REGION_ORIGIN__+0x9>
+		PORTC=0xFF;//turn all leds off		
+ 43a:	8f ef       	ldi	r24, 0xFF	; 255
+ 43c:	85 bb       	out	0x15, r24	; 21
+		*xpos=1;
+ 43e:	81 e0       	ldi	r24, 0x01	; 1
+ 440:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <__DATA_REGION_ORIGIN__>
+		*ypos=1;
+ 444:	80 93 61 00 	sts	0x0061, r24	; 0x800061 <__DATA_REGION_ORIGIN__+0x1>
+ 448:	c4 c1       	rjmp	.+904    	; 0x7d2 <__stack+0x373>
+	  }
+	}else if(data[0]==0x4E){				//N COMMAND (followed by 3 characters containing the x and y position in sudoku array and a value to be stored there.<CR><LF> follows.)
+ 44a:	8e 34       	cpi	r24, 0x4E	; 78
+ 44c:	09 f0       	breq	.+2      	; 0x450 <__DATA_REGION_LENGTH__+0x50>
+ 44e:	54 c0       	rjmp	.+168    	; 0x4f8 <__stack+0x99>
+										    //This is the command that fills the array with values when downloading an unsolved board.
+		if (data[4]==0x0D && data[5]==0x0A){//check if <CR><LF> has been received.if not, no answer is transmitted and no execution is done.
+ 450:	80 91 67 00 	lds	r24, 0x0067	; 0x800067 <__DATA_REGION_ORIGIN__+0x7>
+ 454:	8d 30       	cpi	r24, 0x0D	; 13
+ 456:	09 f0       	breq	.+2      	; 0x45a <__DATA_REGION_LENGTH__+0x5a>
+ 458:	bc c1       	rjmp	.+888    	; 0x7d2 <__stack+0x373>
+ 45a:	80 91 68 00 	lds	r24, 0x0068	; 0x800068 <__DATA_REGION_ORIGIN__+0x8>
+ 45e:	8a 30       	cpi	r24, 0x0A	; 10
+ 460:	09 f0       	breq	.+2      	; 0x464 <__stack+0x5>
+ 462:	b7 c1       	rjmp	.+878    	; 0x7d2 <__stack+0x373>
+			data[1]&=0x0F;//mask x position with 0x0F to retrieve the decimal equivalent and store it back in the data cell
+ 464:	e4 e6       	ldi	r30, 0x64	; 100
+ 466:	f0 e0       	ldi	r31, 0x00	; 0
+ 468:	80 81       	ld	r24, Z
+ 46a:	8f 70       	andi	r24, 0x0F	; 15
+ 46c:	80 83       	st	Z, r24
+			data[2]&=0x0F;//mask y position with 0x0F to retrieve the decimal equivalent and store it back in the data cell
+ 46e:	e5 e6       	ldi	r30, 0x65	; 101
+ 470:	f0 e0       	ldi	r31, 0x00	; 0
+ 472:	20 81       	ld	r18, Z
+ 474:	2f 70       	andi	r18, 0x0F	; 15
+ 476:	20 83       	st	Z, r18
+			data[3]&=0x0F;//mask the actual value with 0x0F to retrieve the decimal equivalent and store it back in the data cell
+ 478:	e6 e6       	ldi	r30, 0x66	; 102
+ 47a:	f0 e0       	ldi	r31, 0x00	; 0
+ 47c:	40 81       	ld	r20, Z
+ 47e:	4f 70       	andi	r20, 0x0F	; 15
+ 480:	40 83       	st	Z, r20
+			sudoku[(data[1]-1)][(data[2]-1)]=data[3];//store the masked value in the masked position in sudoku array.
+ 482:	90 e0       	ldi	r25, 0x00	; 0
+ 484:	01 97       	sbiw	r24, 0x01	; 1
+ 486:	30 e0       	ldi	r19, 0x00	; 0
+ 488:	21 50       	subi	r18, 0x01	; 1
+ 48a:	31 09       	sbc	r19, r1
+ 48c:	bc 01       	movw	r22, r24
+ 48e:	66 0f       	add	r22, r22
+ 490:	77 1f       	adc	r23, r23
+ 492:	66 0f       	add	r22, r22
+ 494:	77 1f       	adc	r23, r23
+ 496:	66 0f       	add	r22, r22
+ 498:	77 1f       	adc	r23, r23
+ 49a:	86 0f       	add	r24, r22
+ 49c:	97 1f       	adc	r25, r23
+ 49e:	80 59       	subi	r24, 0x90	; 144
+ 4a0:	9f 4f       	sbci	r25, 0xFF	; 255
+ 4a2:	dc 01       	movw	r26, r24
+ 4a4:	a2 0f       	add	r26, r18
+ 4a6:	b3 1f       	adc	r27, r19
+ 4a8:	4c 93       	st	X, r20
+			
+			if(data[3]!=0){//if the value stored in the sudoku array is different to zero
+ 4aa:	80 81       	ld	r24, Z
+ 4ac:	88 23       	and	r24, r24
+ 4ae:	49 f0       	breq	.+18     	; 0x4c2 <__stack+0x63>
+				*led=*led+1;//then a new number has been stored so update the led counter 
+ 4b0:	e9 e6       	ldi	r30, 0x69	; 105
+ 4b2:	f0 e0       	ldi	r31, 0x00	; 0
+ 4b4:	80 81       	ld	r24, Z
+ 4b6:	8f 5f       	subi	r24, 0xFF	; 255
+ 4b8:	80 83       	st	Z, r24
+				leds(led);//and call leds function to turn on the equivalent leds
+ 4ba:	89 e6       	ldi	r24, 0x69	; 105
+ 4bc:	90 e0       	ldi	r25, 0x00	; 0
+ 4be:	0e 94 71 00 	call	0xe2	; 0xe2 <leds>
+			}
+			
+		    *answer=0x4F;   //0 in ASCII
+ 4c2:	c2 e6       	ldi	r28, 0x62	; 98
+ 4c4:	d0 e0       	ldi	r29, 0x00	; 0
+ 4c6:	8f e4       	ldi	r24, 0x4F	; 79
+ 4c8:	88 83       	st	Y, r24
+		    Transmit(answer);
+ 4ca:	82 e6       	ldi	r24, 0x62	; 98
+ 4cc:	90 e0       	ldi	r25, 0x00	; 0
+ 4ce:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+		    *answer=0x4B;	 //K in ASCII
+ 4d2:	8b e4       	ldi	r24, 0x4B	; 75
+ 4d4:	88 83       	st	Y, r24
+			Transmit(answer);
+ 4d6:	82 e6       	ldi	r24, 0x62	; 98
+ 4d8:	90 e0       	ldi	r25, 0x00	; 0
+ 4da:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			*answer=0x0D;	 //CR in ASCII
+ 4de:	8d e0       	ldi	r24, 0x0D	; 13
+ 4e0:	88 83       	st	Y, r24
+			Transmit(answer);
+ 4e2:	82 e6       	ldi	r24, 0x62	; 98
+ 4e4:	90 e0       	ldi	r25, 0x00	; 0
+ 4e6:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+		    *answer=0x0A;	 //LF in ASCII
+ 4ea:	8a e0       	ldi	r24, 0x0A	; 10
+ 4ec:	88 83       	st	Y, r24
+			Transmit(answer);
+ 4ee:	82 e6       	ldi	r24, 0x62	; 98
+ 4f0:	90 e0       	ldi	r25, 0x00	; 0
+ 4f2:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+ 4f6:	6d c1       	rjmp	.+730    	; 0x7d2 <__stack+0x373>
+	    }
+	}else if(data[0]==0x50 ){//P COMMAND 
+ 4f8:	80 35       	cpi	r24, 0x50	; 80
+ 4fa:	09 f0       	breq	.+2      	; 0x4fe <__stack+0x9f>
+ 4fc:	40 c0       	rjmp	.+128    	; 0x57e <__stack+0x11f>
+											//FOR P COMMAND:this is the command where the sudoku is solved.It is called after the unsolved board 
+											//has been downloaded, it transmits OK<CR><LF>, then it runs the algorithm to solve the sudoku(not implemented yet)
+											//and when all the cells of the board are filled, it transmits D<CR><LF> meaning the calculations are done and the 
+											//board is ready.
+		if (data[1]==0x0D && data[2]==0x0A){//check if <CR><LF> has been received.if not, no answer is transmitted and no execution is done.
+ 4fe:	80 91 64 00 	lds	r24, 0x0064	; 0x800064 <__DATA_REGION_ORIGIN__+0x4>
+ 502:	8d 30       	cpi	r24, 0x0D	; 13
+ 504:	09 f0       	breq	.+2      	; 0x508 <__stack+0xa9>
+ 506:	65 c1       	rjmp	.+714    	; 0x7d2 <__stack+0x373>
+ 508:	80 91 65 00 	lds	r24, 0x0065	; 0x800065 <__DATA_REGION_ORIGIN__+0x5>
+ 50c:	8a 30       	cpi	r24, 0x0A	; 10
+ 50e:	09 f0       	breq	.+2      	; 0x512 <__stack+0xb3>
+ 510:	60 c1       	rjmp	.+704    	; 0x7d2 <__stack+0x373>
+			
+			*answer=0x4F;   //0 in ASCII
+ 512:	c2 e6       	ldi	r28, 0x62	; 98
+ 514:	d0 e0       	ldi	r29, 0x00	; 0
+ 516:	8f e4       	ldi	r24, 0x4F	; 79
+ 518:	88 83       	st	Y, r24
+			Transmit(answer);
+ 51a:	82 e6       	ldi	r24, 0x62	; 98
+ 51c:	90 e0       	ldi	r25, 0x00	; 0
+ 51e:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			*answer=0x4B;	 //K in ASCII
+ 522:	8b e4       	ldi	r24, 0x4B	; 75
+ 524:	88 83       	st	Y, r24
+			Transmit(answer);
+ 526:	82 e6       	ldi	r24, 0x62	; 98
+ 528:	90 e0       	ldi	r25, 0x00	; 0
+ 52a:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			*answer=0x0D;	 //CR in ASCII
+ 52e:	8d e0       	ldi	r24, 0x0D	; 13
+ 530:	88 83       	st	Y, r24
+			Transmit(answer);
+ 532:	82 e6       	ldi	r24, 0x62	; 98
+ 534:	90 e0       	ldi	r25, 0x00	; 0
+ 536:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			*answer=0x0A;	 //LF in ASCII
+ 53a:	8a e0       	ldi	r24, 0x0A	; 10
+ 53c:	88 83       	st	Y, r24
+			Transmit(answer);
+ 53e:	82 e6       	ldi	r24, 0x62	; 98
+ 540:	90 e0       	ldi	r25, 0x00	; 0
+ 542:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+		
+			if(solveSudoku()){//if the function for sudoku solver returns true meaning that the sudoku board has been solved successfully
+ 546:	0e 94 98 00 	call	0x130	; 0x130 <solveSudoku>
+ 54a:	88 23       	and	r24, r24
+ 54c:	91 f0       	breq	.+36     	; 0x572 <__stack+0x113>
+				*answer=0x44;   //D in ASCII
+ 54e:	84 e4       	ldi	r24, 0x44	; 68
+ 550:	88 83       	st	Y, r24
+				Transmit(answer);
+ 552:	82 e6       	ldi	r24, 0x62	; 98
+ 554:	90 e0       	ldi	r25, 0x00	; 0
+ 556:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+				*answer=0x0D;	 //CR in ASCII
+ 55a:	8d e0       	ldi	r24, 0x0D	; 13
+ 55c:	88 83       	st	Y, r24
+				Transmit(answer);
+ 55e:	82 e6       	ldi	r24, 0x62	; 98
+ 560:	90 e0       	ldi	r25, 0x00	; 0
+ 562:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+				*answer=0x0A;	 //LF in ASCII
+ 566:	8a e0       	ldi	r24, 0x0A	; 10
+ 568:	88 83       	st	Y, r24
+				Transmit(answer);
+ 56a:	82 e6       	ldi	r24, 0x62	; 98
+ 56c:	90 e0       	ldi	r25, 0x00	; 0
+ 56e:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			}
+		//initialize variables x and y for use in S and T commands.
+		xpos[0]=1;
+ 572:	81 e0       	ldi	r24, 0x01	; 1
+ 574:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <__DATA_REGION_ORIGIN__>
+		ypos[0]=1;
+ 578:	80 93 61 00 	sts	0x0061, r24	; 0x800061 <__DATA_REGION_ORIGIN__+0x1>
+ 57c:	2a c1       	rjmp	.+596    	; 0x7d2 <__stack+0x373>
+	 }
+	}else if (data[0]==0x44){				//D(debug) COMMAND (followed by 2 characters containing the x and y position in sudoku array.Using this position the value of that
+ 57e:	84 34       	cpi	r24, 0x44	; 68
+ 580:	09 f0       	breq	.+2      	; 0x584 <__stack+0x125>
+ 582:	53 c0       	rjmp	.+166    	; 0x62a <__stack+0x1cb>
+											//sudoku cell is transmitted back to the PC. The answer is in the form of: N<X><Y><VALUE><CR><LF>.)
+	   if (data[3]==0x0D && data[4]==0x0A){ //check if <CR><LF> has been received.if not, no answer is transmitted and no execution is done.
+ 584:	80 91 66 00 	lds	r24, 0x0066	; 0x800066 <__DATA_REGION_ORIGIN__+0x6>
+ 588:	8d 30       	cpi	r24, 0x0D	; 13
+ 58a:	09 f0       	breq	.+2      	; 0x58e <__stack+0x12f>
+ 58c:	22 c1       	rjmp	.+580    	; 0x7d2 <__stack+0x373>
+ 58e:	80 91 67 00 	lds	r24, 0x0067	; 0x800067 <__DATA_REGION_ORIGIN__+0x7>
+ 592:	8a 30       	cpi	r24, 0x0A	; 10
+ 594:	09 f0       	breq	.+2      	; 0x598 <__stack+0x139>
+ 596:	1d c1       	rjmp	.+570    	; 0x7d2 <__stack+0x373>
+			*answer=0x4E; //N IN ASCII
+ 598:	c2 e6       	ldi	r28, 0x62	; 98
+ 59a:	d0 e0       	ldi	r29, 0x00	; 0
+ 59c:	8e e4       	ldi	r24, 0x4E	; 78
+ 59e:	88 83       	st	Y, r24
+			Transmit(answer);
+ 5a0:	82 e6       	ldi	r24, 0x62	; 98
+ 5a2:	90 e0       	ldi	r25, 0x00	; 0
+ 5a4:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			*answer=data[1];//transmit x position as read from UDR
+ 5a8:	03 e6       	ldi	r16, 0x63	; 99
+ 5aa:	10 e0       	ldi	r17, 0x00	; 0
+ 5ac:	f8 01       	movw	r30, r16
+ 5ae:	81 81       	ldd	r24, Z+1	; 0x01
+ 5b0:	88 83       	st	Y, r24
+			Transmit(answer);
+ 5b2:	82 e6       	ldi	r24, 0x62	; 98
+ 5b4:	90 e0       	ldi	r25, 0x00	; 0
+ 5b6:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			*answer=data[2];//transmit y position as read from UDR
+ 5ba:	f8 01       	movw	r30, r16
+ 5bc:	82 81       	ldd	r24, Z+2	; 0x02
+ 5be:	88 83       	st	Y, r24
+			Transmit(answer);
+ 5c0:	82 e6       	ldi	r24, 0x62	; 98
+ 5c2:	90 e0       	ldi	r25, 0x00	; 0
+ 5c4:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			data[1]&=0x0F;//mask x position with 0x0F to retrieve the decimal equivalent and store it back in the data cell
+ 5c8:	e4 e6       	ldi	r30, 0x64	; 100
+ 5ca:	f0 e0       	ldi	r31, 0x00	; 0
+ 5cc:	80 81       	ld	r24, Z
+ 5ce:	8f 70       	andi	r24, 0x0F	; 15
+ 5d0:	80 83       	st	Z, r24
+			data[2]&=0x0F;//mask y position with 0x0F to retrieve the decimal equivalent and store it back in the data cell
+ 5d2:	e5 e6       	ldi	r30, 0x65	; 101
+ 5d4:	f0 e0       	ldi	r31, 0x00	; 0
+ 5d6:	20 81       	ld	r18, Z
+ 5d8:	2f 70       	andi	r18, 0x0F	; 15
+ 5da:	20 83       	st	Z, r18
+			*answer=(sudoku[(data[1]-1)][(data[2]-1)])+48;
+ 5dc:	90 e0       	ldi	r25, 0x00	; 0
+ 5de:	01 97       	sbiw	r24, 0x01	; 1
+ 5e0:	30 e0       	ldi	r19, 0x00	; 0
+ 5e2:	21 50       	subi	r18, 0x01	; 1
+ 5e4:	31 09       	sbc	r19, r1
+ 5e6:	ac 01       	movw	r20, r24
+ 5e8:	44 0f       	add	r20, r20
+ 5ea:	55 1f       	adc	r21, r21
+ 5ec:	44 0f       	add	r20, r20
+ 5ee:	55 1f       	adc	r21, r21
+ 5f0:	44 0f       	add	r20, r20
+ 5f2:	55 1f       	adc	r21, r21
+ 5f4:	84 0f       	add	r24, r20
+ 5f6:	95 1f       	adc	r25, r21
+ 5f8:	80 59       	subi	r24, 0x90	; 144
+ 5fa:	9f 4f       	sbci	r25, 0xFF	; 255
+ 5fc:	fc 01       	movw	r30, r24
+ 5fe:	e2 0f       	add	r30, r18
+ 600:	f3 1f       	adc	r31, r19
+ 602:	80 81       	ld	r24, Z
+ 604:	80 5d       	subi	r24, 0xD0	; 208
+ 606:	88 83       	st	Y, r24
+			Transmit(answer);//transmit the value from the position of the board that was read from the command and masked above
+ 608:	82 e6       	ldi	r24, 0x62	; 98
+ 60a:	90 e0       	ldi	r25, 0x00	; 0
+ 60c:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+											  // (+48 is added, as the value is stored in sudoku array in decimal, and the numbers 0-9 start from 
+											  //decimal 48 in ASCII.)
+			*answer=0x0D;	 //CR in ASCII
+ 610:	8d e0       	ldi	r24, 0x0D	; 13
+ 612:	88 83       	st	Y, r24
+			Transmit(answer);
+ 614:	82 e6       	ldi	r24, 0x62	; 98
+ 616:	90 e0       	ldi	r25, 0x00	; 0
+ 618:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			*answer=0x0A;	 //LF in ASCII
+ 61c:	8a e0       	ldi	r24, 0x0A	; 10
+ 61e:	88 83       	st	Y, r24
+			Transmit(answer);
+ 620:	82 e6       	ldi	r24, 0x62	; 98
+ 622:	90 e0       	ldi	r25, 0x00	; 0
+ 624:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+ 628:	d4 c0       	rjmp	.+424    	; 0x7d2 <__stack+0x373>
+	   }
+		
+	}else if(data[0]==0x53){                //S COMMAND (sends the first sudoku cell result in the format of: N<X><Y><VALUE><CR><LF>, after it is solved (after AVR has sent done to PC).)
+ 62a:	83 35       	cpi	r24, 0x53	; 83
+ 62c:	09 f0       	breq	.+2      	; 0x630 <__stack+0x1d1>
+ 62e:	54 c0       	rjmp	.+168    	; 0x6d8 <__stack+0x279>
+		
+		if(data[1]==0x0D && data[2]==0x0A){//check if <CR><LF> has been received.if not, no answer is transmitted and no execution is done.
+ 630:	80 91 64 00 	lds	r24, 0x0064	; 0x800064 <__DATA_REGION_ORIGIN__+0x4>
+ 634:	8d 30       	cpi	r24, 0x0D	; 13
+ 636:	09 f0       	breq	.+2      	; 0x63a <__stack+0x1db>
+ 638:	cc c0       	rjmp	.+408    	; 0x7d2 <__stack+0x373>
+ 63a:	80 91 65 00 	lds	r24, 0x0065	; 0x800065 <__DATA_REGION_ORIGIN__+0x5>
+ 63e:	8a 30       	cpi	r24, 0x0A	; 10
+ 640:	09 f0       	breq	.+2      	; 0x644 <__stack+0x1e5>
+ 642:	c7 c0       	rjmp	.+398    	; 0x7d2 <__stack+0x373>
+			*answer=0x4E;     //N IN ASCII
+ 644:	c2 e6       	ldi	r28, 0x62	; 98
+ 646:	d0 e0       	ldi	r29, 0x00	; 0
+ 648:	8e e4       	ldi	r24, 0x4E	; 78
+ 64a:	88 83       	st	Y, r24
+			Transmit(answer);
+ 64c:	82 e6       	ldi	r24, 0x62	; 98
+ 64e:	90 e0       	ldi	r25, 0x00	; 0
+ 650:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			*answer=xpos[0]+48; //transmit xposition initialized to 1 to show the cell 11 of sudoku array and added 48 to reach the ASCII encoding of 0-9 decimal numbers.
+ 654:	0f 2e       	mov	r0, r31
+ 656:	f0 e6       	ldi	r31, 0x60	; 96
+ 658:	ef 2e       	mov	r14, r31
+ 65a:	f1 2c       	mov	r15, r1
+ 65c:	f0 2d       	mov	r31, r0
+ 65e:	f7 01       	movw	r30, r14
+ 660:	80 81       	ld	r24, Z
+ 662:	80 5d       	subi	r24, 0xD0	; 208
+ 664:	88 83       	st	Y, r24
+			Transmit(answer); 
+ 666:	82 e6       	ldi	r24, 0x62	; 98
+ 668:	90 e0       	ldi	r25, 0x00	; 0
+ 66a:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			*answer=ypos[0]+48; //transmit yposition initialized to 1 to show the cell 11 of sudoku array and added 48 to reach the ASCII encoding of 0-9 decimal numbers.
+ 66e:	01 e6       	ldi	r16, 0x61	; 97
+ 670:	10 e0       	ldi	r17, 0x00	; 0
+ 672:	f8 01       	movw	r30, r16
+ 674:	80 81       	ld	r24, Z
+ 676:	80 5d       	subi	r24, 0xD0	; 208
+ 678:	88 83       	st	Y, r24
+			Transmit(answer);
+ 67a:	82 e6       	ldi	r24, 0x62	; 98
+ 67c:	90 e0       	ldi	r25, 0x00	; 0
+ 67e:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			*answer=(sudoku[(xpos[0]-1)][(ypos[0]-1)])+48; //transmit the value in 11 position in sudoku array and added 48 to reach the ASCII encoding of 0-9 decimal numbers.
+ 682:	f7 01       	movw	r30, r14
+ 684:	80 81       	ld	r24, Z
+ 686:	90 e0       	ldi	r25, 0x00	; 0
+ 688:	01 97       	sbiw	r24, 0x01	; 1
+ 68a:	f8 01       	movw	r30, r16
+ 68c:	20 81       	ld	r18, Z
+ 68e:	30 e0       	ldi	r19, 0x00	; 0
+ 690:	21 50       	subi	r18, 0x01	; 1
+ 692:	31 09       	sbc	r19, r1
+ 694:	ac 01       	movw	r20, r24
+ 696:	44 0f       	add	r20, r20
+ 698:	55 1f       	adc	r21, r21
+ 69a:	44 0f       	add	r20, r20
+ 69c:	55 1f       	adc	r21, r21
+ 69e:	44 0f       	add	r20, r20
+ 6a0:	55 1f       	adc	r21, r21
+ 6a2:	84 0f       	add	r24, r20
+ 6a4:	95 1f       	adc	r25, r21
+ 6a6:	80 59       	subi	r24, 0x90	; 144
+ 6a8:	9f 4f       	sbci	r25, 0xFF	; 255
+ 6aa:	fc 01       	movw	r30, r24
+ 6ac:	e2 0f       	add	r30, r18
+ 6ae:	f3 1f       	adc	r31, r19
+ 6b0:	80 81       	ld	r24, Z
+ 6b2:	80 5d       	subi	r24, 0xD0	; 208
+ 6b4:	88 83       	st	Y, r24
+			Transmit(answer);
+ 6b6:	82 e6       	ldi	r24, 0x62	; 98
+ 6b8:	90 e0       	ldi	r25, 0x00	; 0
+ 6ba:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			*answer=0x0D;	 //CR in ASCII
+ 6be:	8d e0       	ldi	r24, 0x0D	; 13
+ 6c0:	88 83       	st	Y, r24
+			Transmit(answer);
+ 6c2:	82 e6       	ldi	r24, 0x62	; 98
+ 6c4:	90 e0       	ldi	r25, 0x00	; 0
+ 6c6:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			*answer=0x0A;	 //LF in ASCII
+ 6ca:	8a e0       	ldi	r24, 0x0A	; 10
+ 6cc:	88 83       	st	Y, r24
+			Transmit(answer);
+ 6ce:	82 e6       	ldi	r24, 0x62	; 98
+ 6d0:	90 e0       	ldi	r25, 0x00	; 0
+ 6d2:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+ 6d6:	7d c0       	rjmp	.+250    	; 0x7d2 <__stack+0x373>
+		}
+	}else if(data[0]==0x54 ){				//T COMMAND (sends the next value of the sudoku cell, called until all the board is transmitted)
+ 6d8:	84 35       	cpi	r24, 0x54	; 84
+ 6da:	09 f0       	breq	.+2      	; 0x6de <__stack+0x27f>
+ 6dc:	7a c0       	rjmp	.+244    	; 0x7d2 <__stack+0x373>
+		if(data[1]==0x0D && data[2]==0x0A){//check if <CR><LF> has been received.if not, no answer is transmitted and no execution is done.
+ 6de:	80 91 64 00 	lds	r24, 0x0064	; 0x800064 <__DATA_REGION_ORIGIN__+0x4>
+ 6e2:	8d 30       	cpi	r24, 0x0D	; 13
+ 6e4:	09 f0       	breq	.+2      	; 0x6e8 <__stack+0x289>
+ 6e6:	75 c0       	rjmp	.+234    	; 0x7d2 <__stack+0x373>
+ 6e8:	80 91 65 00 	lds	r24, 0x0065	; 0x800065 <__DATA_REGION_ORIGIN__+0x5>
+ 6ec:	8a 30       	cpi	r24, 0x0A	; 10
+ 6ee:	09 f0       	breq	.+2      	; 0x6f2 <__stack+0x293>
+ 6f0:	70 c0       	rjmp	.+224    	; 0x7d2 <__stack+0x373>
+				ypos[0]=ypos[0]+1; //increase y position as the position 11 has been displayed from S COMMAND, so the transmission starts from cell 12 of sudoku array.
+ 6f2:	01 e6       	ldi	r16, 0x61	; 97
+ 6f4:	10 e0       	ldi	r17, 0x00	; 0
+ 6f6:	f8 01       	movw	r30, r16
+ 6f8:	80 81       	ld	r24, Z
+ 6fa:	8f 5f       	subi	r24, 0xFF	; 255
+ 6fc:	80 83       	st	Z, r24
+			    *answer=0x4E;  //N IN ASCII
+ 6fe:	c2 e6       	ldi	r28, 0x62	; 98
+ 700:	d0 e0       	ldi	r29, 0x00	; 0
+ 702:	8e e4       	ldi	r24, 0x4E	; 78
+ 704:	88 83       	st	Y, r24
+			    Transmit(answer);
+ 706:	82 e6       	ldi	r24, 0x62	; 98
+ 708:	90 e0       	ldi	r25, 0x00	; 0
+ 70a:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+				*answer=xpos[0]+48;//transmit xposition to show the value of sudoku array in this position and added 48 to reach the ASCII encoding of 0-9 decimal numbers.
+ 70e:	0f 2e       	mov	r0, r31
+ 710:	f0 e6       	ldi	r31, 0x60	; 96
+ 712:	ef 2e       	mov	r14, r31
+ 714:	f1 2c       	mov	r15, r1
+ 716:	f0 2d       	mov	r31, r0
+ 718:	f7 01       	movw	r30, r14
+ 71a:	80 81       	ld	r24, Z
+ 71c:	80 5d       	subi	r24, 0xD0	; 208
+ 71e:	88 83       	st	Y, r24
+				Transmit(answer);
+ 720:	82 e6       	ldi	r24, 0x62	; 98
+ 722:	90 e0       	ldi	r25, 0x00	; 0
+ 724:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+				*answer=ypos[0]+48;//transmit yposition to show the value of sudoku array in this position and added 48 to reach the ASCII encoding of 0-9 decimal numbers.
+ 728:	f8 01       	movw	r30, r16
+ 72a:	80 81       	ld	r24, Z
+ 72c:	80 5d       	subi	r24, 0xD0	; 208
+ 72e:	88 83       	st	Y, r24
+				Transmit(answer);
+ 730:	82 e6       	ldi	r24, 0x62	; 98
+ 732:	90 e0       	ldi	r25, 0x00	; 0
+ 734:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+				*answer=(sudoku[(xpos[0]-1)][(ypos[0]-1)])+48;//transmit the value of the positions above 
+ 738:	f7 01       	movw	r30, r14
+ 73a:	80 81       	ld	r24, Z
+ 73c:	90 e0       	ldi	r25, 0x00	; 0
+ 73e:	01 97       	sbiw	r24, 0x01	; 1
+ 740:	f8 01       	movw	r30, r16
+ 742:	20 81       	ld	r18, Z
+ 744:	30 e0       	ldi	r19, 0x00	; 0
+ 746:	21 50       	subi	r18, 0x01	; 1
+ 748:	31 09       	sbc	r19, r1
+ 74a:	ac 01       	movw	r20, r24
+ 74c:	44 0f       	add	r20, r20
+ 74e:	55 1f       	adc	r21, r21
+ 750:	44 0f       	add	r20, r20
+ 752:	55 1f       	adc	r21, r21
+ 754:	44 0f       	add	r20, r20
+ 756:	55 1f       	adc	r21, r21
+ 758:	84 0f       	add	r24, r20
+ 75a:	95 1f       	adc	r25, r21
+ 75c:	80 59       	subi	r24, 0x90	; 144
+ 75e:	9f 4f       	sbci	r25, 0xFF	; 255
+ 760:	fc 01       	movw	r30, r24
+ 762:	e2 0f       	add	r30, r18
+ 764:	f3 1f       	adc	r31, r19
+ 766:	80 81       	ld	r24, Z
+ 768:	80 5d       	subi	r24, 0xD0	; 208
+ 76a:	88 83       	st	Y, r24
+				Transmit(answer);
+ 76c:	82 e6       	ldi	r24, 0x62	; 98
+ 76e:	90 e0       	ldi	r25, 0x00	; 0
+ 770:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+				*answer=0x0D;	 //CR in ASCII
+ 774:	8d e0       	ldi	r24, 0x0D	; 13
+ 776:	88 83       	st	Y, r24
+				Transmit(answer);
+ 778:	82 e6       	ldi	r24, 0x62	; 98
+ 77a:	90 e0       	ldi	r25, 0x00	; 0
+ 77c:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+				*answer=0x0A;	 //LF in ASCII
+ 780:	8a e0       	ldi	r24, 0x0A	; 10
+ 782:	88 83       	st	Y, r24
+				Transmit(answer);
+ 784:	82 e6       	ldi	r24, 0x62	; 98
+ 786:	90 e0       	ldi	r25, 0x00	; 0
+ 788:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+				if(ypos[0]==9){//when y position reaches the value 9
+ 78c:	f8 01       	movw	r30, r16
+ 78e:	80 81       	ld	r24, Z
+ 790:	89 30       	cpi	r24, 0x09	; 9
+ 792:	f9 f4       	brne	.+62     	; 0x7d2 <__stack+0x373>
+					if(xpos[0]==9){//if x position has reached the value 9 as well, that means that the whole board has been transmitted, so the answer D<CR><LF> is transmitted to PC.
+ 794:	80 91 60 00 	lds	r24, 0x0060	; 0x800060 <__DATA_REGION_ORIGIN__>
+ 798:	89 30       	cpi	r24, 0x09	; 9
+ 79a:	a1 f4       	brne	.+40     	; 0x7c4 <__stack+0x365>
+						*answer=0x44; //D
+ 79c:	84 e4       	ldi	r24, 0x44	; 68
+ 79e:	88 83       	st	Y, r24
+						Transmit(answer);
+ 7a0:	82 e6       	ldi	r24, 0x62	; 98
+ 7a2:	90 e0       	ldi	r25, 0x00	; 0
+ 7a4:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+						*answer=0x0D;	 //CR in ASCII
+ 7a8:	8d e0       	ldi	r24, 0x0D	; 13
+ 7aa:	88 83       	st	Y, r24
+						Transmit(answer);
+ 7ac:	82 e6       	ldi	r24, 0x62	; 98
+ 7ae:	90 e0       	ldi	r25, 0x00	; 0
+ 7b0:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+						*answer=0x0A;	 //LF in ASCII
+ 7b4:	8a e0       	ldi	r24, 0x0A	; 10
+ 7b6:	88 83       	st	Y, r24
+						Transmit(answer);
+ 7b8:	82 e6       	ldi	r24, 0x62	; 98
+ 7ba:	90 e0       	ldi	r25, 0x00	; 0
+ 7bc:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+						//reinitialize yposition and xposition in the right values so that after exiting this case, their values are 1 1.
+						ypos[0]=1;
+						xpos[0]=0;
+ 7c0:	10 92 60 00 	sts	0x0060, r1	; 0x800060 <__DATA_REGION_ORIGIN__>
+					}
+					xpos[0]=xpos[0]+1;//if xposition has not reached the value 9 then increase the value of xposition.
+ 7c4:	e0 e6       	ldi	r30, 0x60	; 96
+ 7c6:	f0 e0       	ldi	r31, 0x00	; 0
+ 7c8:	80 81       	ld	r24, Z
+ 7ca:	8f 5f       	subi	r24, 0xFF	; 255
+ 7cc:	80 83       	st	Z, r24
+					ypos[0]=0;//set yposition to 0, so that when T is called again to transmit the next value, it takes the value 1 before transmitting.
+ 7ce:	10 92 61 00 	sts	0x0061, r1	; 0x800061 <__DATA_REGION_ORIGIN__+0x1>
+				}	
+			}
+	
+		}
+		if(data[0]==0x42){ //B COMMAND
+ 7d2:	80 91 63 00 	lds	r24, 0x0063	; 0x800063 <__DATA_REGION_ORIGIN__+0x3>
+ 7d6:	82 34       	cpi	r24, 0x42	; 66
+ 7d8:	d1 f4       	brne	.+52     	; 0x80e <__stack+0x3af>
+			*answer=0x4F;   //0 in ASCII
+ 7da:	c2 e6       	ldi	r28, 0x62	; 98
+ 7dc:	d0 e0       	ldi	r29, 0x00	; 0
+ 7de:	8f e4       	ldi	r24, 0x4F	; 79
+ 7e0:	88 83       	st	Y, r24
+			Transmit(answer);
+ 7e2:	82 e6       	ldi	r24, 0x62	; 98
+ 7e4:	90 e0       	ldi	r25, 0x00	; 0
+ 7e6:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			*answer=0x4B;	 //K in ASCII
+ 7ea:	8b e4       	ldi	r24, 0x4B	; 75
+ 7ec:	88 83       	st	Y, r24
+			Transmit(answer);
+ 7ee:	82 e6       	ldi	r24, 0x62	; 98
+ 7f0:	90 e0       	ldi	r25, 0x00	; 0
+ 7f2:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			*answer=0x0D;	 //CR in ASCII
+ 7f6:	8d e0       	ldi	r24, 0x0D	; 13
+ 7f8:	88 83       	st	Y, r24
+			Transmit(answer);
+ 7fa:	82 e6       	ldi	r24, 0x62	; 98
+ 7fc:	90 e0       	ldi	r25, 0x00	; 0
+ 7fe:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+			*answer=0x0A;	 //LF in ASCII
+ 802:	8a e0       	ldi	r24, 0x0A	; 10
+ 804:	88 83       	st	Y, r24
+			Transmit(answer);
+ 806:	82 e6       	ldi	r24, 0x62	; 98
+ 808:	90 e0       	ldi	r25, 0x00	; 0
+ 80a:	0e 94 6b 00 	call	0xd6	; 0xd6 <Transmit>
+
+	     }
+}
+ 80e:	ff 91       	pop	r31
+ 810:	ef 91       	pop	r30
+ 812:	df 91       	pop	r29
+ 814:	cf 91       	pop	r28
+ 816:	bf 91       	pop	r27
+ 818:	af 91       	pop	r26
+ 81a:	9f 91       	pop	r25
+ 81c:	8f 91       	pop	r24
+ 81e:	7f 91       	pop	r23
+ 820:	6f 91       	pop	r22
+ 822:	5f 91       	pop	r21
+ 824:	4f 91       	pop	r20
+ 826:	3f 91       	pop	r19
+ 828:	2f 91       	pop	r18
+ 82a:	1f 91       	pop	r17
+ 82c:	0f 91       	pop	r16
+ 82e:	ff 90       	pop	r15
+ 830:	ef 90       	pop	r14
+ 832:	0f 90       	pop	r0
+ 834:	0f be       	out	0x3f, r0	; 63
+ 836:	0f 90       	pop	r0
+ 838:	1f 90       	pop	r1
+ 83a:	18 95       	reti
+
+0000083c <_exit>:
+ 83c:	f8 94       	cli
+
+0000083e <__stop_program>:
+ 83e:	ff cf       	rjmp	.-2      	; 0x83e <__stop_program>
