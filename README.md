@@ -1,4 +1,4 @@
-# SUDOKU Solver On STK500 Microchip
+# SUDOKU Solver On STK500
 This project aimed to implement a Sudoku game solver on the STK500 platform using the ATmega16 microcontroller. The system receives a 9x9 Sudoku grid via a serial connection, processes input commands in ASCII, and returns either the solved grid or error codes. The project involved serial communication, LED output to indicate progress, and the implementation of the Sudoku-solving algorithm through backtracking.
 
 The development used the Microchip Studio environment, and tools like AVRDUDESS, Putty, and Tera Term facilitated communication between the microcontroller and a PC. The system's functionality was tested by sending commands to control the Sudoku board and observe progress via LEDs on the STK500 board. The algorithm solved the Sudoku grid by filling empty cells with valid numbers, using recursive backtracking to ensure a valid solution.
